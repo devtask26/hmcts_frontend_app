@@ -1,0 +1,70 @@
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% extends "template.njk" %}
+
+{% block content %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/"
+  }) }}
+
+  <h1 class="govuk-heading-l">Edit case {{ example.id }}</h1>
+
+  <form method="POST" action="/edit/{{ example.id }}">
+    {{ govukInput({
+      label: {
+        text: "User ID"
+      },
+      name: "user_id",
+      value: example.user_id
+    }) }}
+
+    {{ govukInput({
+      label: {
+        text: "Case Number"
+      },
+      name: "caseNumber",
+      value: example.caseNumber
+    }) }}
+
+    {{ govukInput({
+      label: {
+        text: "Title"
+      },
+      name: "title", 
+      value: example.title
+    }) }}
+
+    {{ govukTextarea({
+      label: {
+        text: "Description"
+      },
+      name: "description",
+      value: example.description,
+      rows: 5
+    }) }}
+
+    {{ govukInput({
+      label: {
+        text: "Due Date"
+      },
+      name: "due_date",
+      value: example.due_date
+    }) }}
+
+    {{ govukInput({
+      label: {
+        text: "Status"
+      },
+      name: "status",
+      value: example.status
+    }) }}
+
+    {{ govukButton({
+      text: "Save changes"
+    }) }}
+  </form>
+{% endblock %}
