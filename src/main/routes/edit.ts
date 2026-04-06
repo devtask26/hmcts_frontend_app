@@ -14,17 +14,63 @@ export default function (app: Application): void {
     }
   });
 
-  // Make request to update record
   app.post('/edit/:id', async (req, res) => {
     try {
       await axios.put(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TASK_BY_ID(req.params.id)}`, req.body);
-      res.redirect('/');
+      
+      if (req.is('application/json')) {
+        console.log('was a success');
+        res.json({ success: true });
+      } else {
+        res.redirect('/');
+      }
     } catch (error) {
-      console.error('Error updating task:', error);
-      res.render('edit', { 
-        example: { ...req.body, id: req.params.id },
-        error: 'Failed to update task'
-      });
+      console.error('Error updating task:', error.response?.data);
+      
+      if (req.is('application/json')) {
+        let errorMessage = 'Failed to update task';
+        let allErrors: any = {};
+        
+        if (error.response && error.response.data) {
+          const apiError = error.response.data;
+          
+          if (apiError.message) {
+            errorMessage = apiError.message;
+          }
+          
+          if (apiError.errors) {
+            allErrors = apiError.errors;
+          }
+        }
+        
+        res.status(422).json({ 
+          success: false, 
+          error: errorMessage,
+          allErrors: allErrors
+        });
+      } else {
+        let errorMessage = 'Failed to update task';
+        let allErrors: any[] = [];
+        
+        if (error.response && error.response.data) {
+          const apiError = error.response.data;
+          
+          if (apiError.message) {
+            errorMessage = apiError.message;
+          }
+          
+          if (apiError.errors) {
+            allErrors = apiError.errors;
+          }
+        }
+        
+        console.log('errors', allErrors);
+        res.render('edit', { 
+          example: { ...req.body, id: req.params.id },
+          error: errorMessage,
+          allErrors: allErrors
+        });
+      }
     }
   });
 }

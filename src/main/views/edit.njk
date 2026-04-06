@@ -13,7 +13,18 @@
 
   <h1 class="govuk-heading-l">Edit case {{ example.id }}</h1>
 
-  <form method="POST" action="/edit/{{ example.id }}">
+  {% if error %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: [
+        {
+          text: error
+        }
+      ]
+    }) }}
+  {% endif %}
+
+  <form method="POST" action="/edit/{{ example.id }}" id="editForm">
     {{ govukInput({
       label: {
         text: "User ID"
@@ -67,4 +78,94 @@
       text: "Save changes"
     }) }}
   </form>
+
+  <script>
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+      
+      try {
+        const response = await fetch(`/edit/{{ example.id }}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+          window.location.href = '/';
+        } else {
+          const result = await response.json();
+          
+          // Display the error from the API response
+          if (result.error) {
+            // Create or update error summary
+            let errorSummary = document.querySelector('.govuk-error-summary');
+            if (!errorSummary) {
+              // Insert error summary after the h1
+              const h1 = document.querySelector('h1');
+              errorSummary = document.createElement('div');
+              errorSummary.className = 'govuk-error-summary';
+              h1.insertAdjacentElement('afterend', errorSummary);
+            }
+            
+            // Build error list HTML
+            let errorListHtml = '';
+            const errors = result.allErrors || {};
+                        
+            // Handle object-based error structure
+            if (typeof errors === 'object' && errors !== null) {
+              Object.keys(errors).forEach(fieldName => {
+                const fieldErrors = errors[fieldName];
+                if (Array.isArray(fieldErrors)) {
+                  fieldErrors.forEach(errorMessage => {
+                    errorListHtml += `<li><a href="#${fieldName}">${errorMessage}</a></li>`;
+                  });
+                }
+              });
+            }
+            
+            errorSummary.innerHTML = `
+              <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+                <h2 class="govuk-error-summary__title" id="error-summary-title">
+                  There is a problem
+                </h2>
+                <div class="govuk-error-summary__body">
+                  <p class="govuk-body">${result.error}</p>
+                  <ul class="govuk-list govuk-error-summary__list">
+                    ${errorListHtml}
+                  </ul>
+                </div>
+              </div>
+            `;
+            
+            // Focus on the error summary
+            errorSummary.focus();
+            
+            // Add error styling to all fields with errors
+            if (typeof errors === 'object' && errors !== null) {
+              Object.keys(errors).forEach(fieldName => {
+                if (fieldName && fieldName !== 'general') {
+                  const fieldElement = document.querySelector(`[name="${fieldName}"]`);
+                  if (fieldElement) {
+                    fieldElement.classList.add('govuk-input--error');
+                    const formGroup = fieldElement.closest('.govuk-form-group');
+                    if (formGroup) {
+                      formGroup.classList.add('govuk-form-group--error');
+                    }
+                  }
+                }
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to update case');
+      }
+    });
+  </script>
 {% endblock %}
