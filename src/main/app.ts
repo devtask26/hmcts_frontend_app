@@ -1,6 +1,5 @@
 import * as path from 'path';
 
-import { HTTPError } from './HttpError';
 import { Nunjucks } from './modules/nunjucks';
 
 import * as bodyParser from 'body-parser';
@@ -37,11 +36,16 @@ glob
 setupDev(app, developmentMode);
 
 // error handler
-app.use((err: HTTPError, req: express.Request, res: express.Response) => {
+app.use((err: any, req: express.Request, res: any, next: express.NextFunction) => {
   console.log(err);
+  if (!res || typeof res.status !== 'function') {
+    return next(err);
+  }
   // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = env === 'development' ? err : {};
+  if (res.locals) {
+    res.locals.message = err.message || err.toString();
+    res.locals.error = env === 'development' ? err : {};
+  }
   res.status(err.status || 500);
   res.render('error');
 });
