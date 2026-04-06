@@ -1,4 +1,5 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% extends "template.njk" %}
 
@@ -12,110 +13,59 @@ but ultimately it is up to you -->
   to ensure you have both services running. You may want to make use of the Gov UK Components:
   https://design-system.service.gov.uk/components/ to add tabs and so forth :) -->
 
-  {% if example.id %}
+  <div class="govuk-margin-bottom-4">
+    <a href="/add" class="govuk-button">Add new case</a>
+  </div>
 
-    {{ govukSummaryList({
-      rows: [
-        {
-          key: {
-            text: "ID"
+  {% if examples %}
+    {% for example in examples %}
+      <h2 class="govuk-heading-m">Case {{ example.id }}</h2>
+      
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "ID" },
+            value: { text: example.id },
+            actions: {
+              items: [
+                {
+                  href: "/edit/" + example.id,
+                  text: "Change",
+                  visuallyHiddenText: "Update record?!"
+                },
+                {
+                  href: "/delete/" + example.id,
+                  text: "Delete",
+                  visuallyHiddenText: "Delete description"
+                }
+              ]
+            }
           },
-          value: {
-            text: example.id
+          {
+            key: { text: "Case Number" },
+            value: { text: example.caseNumber }
           },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "change case id ?!"
-              }
-            ]
+          {
+            key: { text: "Title" },
+            value: { html: example.title }
+          },
+          {
+            key: { text: "Description" },
+            value: { html: example.description }
+          },
+          {
+            key: { text: "Status" },
+            value: { html: example.status }
+          },
+          {
+            key: { text: "Created Date" },
+            value: { html: example.created_at }
           }
-        },
-        {
-          key: {
-            text: "Case Number"
-          },
-          value: {
-            text: example.caseNumber
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "change case number"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Title"
-          },
-          value: {
-            html: example.title
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "change case title"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Description"
-          },
-          value: {
-            html: example.description
-          },
-          actions: {
-            items: [
-               {
-                 href: "#",
-                 text: "Delete",
-                 visuallyHiddenText: "Delete description"
-               },
-               {
-                 href: "#",
-                 text: "Change",
-                 visuallyHiddenText: "Change description"
-               }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Status"
-          },
-          value: {
-            html: example.status
-          },
-          actions: {
-            items: [
-            ]
-          }
-        },
-        {
-          key: {
-           text: "Created Date"
-          },
-          value: {
-           html: example.createdDate
-          },
-          actions: {
-           items: [
-           ]
-          }
-        }
-      ]
-    }) }}
-
+        ]
+      }) }}
+      
+      {% if not loop.last %}<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">{% endif %}
+    {% endfor %}
   {% endif %}
 
 {% endblock %}
